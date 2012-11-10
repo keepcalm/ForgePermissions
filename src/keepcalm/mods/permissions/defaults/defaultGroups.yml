@@ -1,0 +1,12 @@
+# Default groups.yml configuration
+# Same rules apply as permissions.yml
+group_name:
+  permissions:
+    - permission_for_group1
+  inherit:
+    - sample_group
+    - !group_that_sample_group_inherits
+new_users:
+   permissions:
+     - vanilla.permissions.help
+# More will eventually be added

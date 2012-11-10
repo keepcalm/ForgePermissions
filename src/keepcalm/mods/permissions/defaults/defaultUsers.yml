@@ -1,0 +1,18 @@
+# This is the default user configuration for ForgePermissions
+# Lines starting with a '#' are ignored.
+# The format is as with a Bukkit YML configuration file,
+# so you cannot use tabs - use indents of 2 or 4 spaces.
+# The format is:
+#PlayerUserName:
+#  permissions:
+#    - permission1
+#    - permission2
+#    - permission3
+# this excludes a permission that is either on by default or inherited from a group.
+#    - !permission_from_group
+#   groups:
+#     - group_from_groups.yml
+# disable a group that is inherited from groups.yml 
+#     - !parent_group_of_that_group
+   
+# more features will be added. Eventually.

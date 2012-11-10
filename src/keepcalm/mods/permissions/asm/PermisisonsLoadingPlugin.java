@@ -18,7 +18,7 @@ public class PermisisonsLoadingPlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String getModContainerClass() {
-		return null;
+		return "keepcalm.mods.permissions.asm.PermissionsContainer";
 	}
 
 	@Override

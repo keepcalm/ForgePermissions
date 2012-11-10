@@ -1,0 +1,5 @@
+# This is the default configuration for ForgePermissions's YML backend
+# See users.yml for details
+
+# The default group for new users
+defaultGroup: "new_users"

@@ -3,6 +3,11 @@ package keepcalm.mods.permissions.asm;
 import java.io.File;
 import java.util.Arrays;
 
+import keepcalm.mods.permissions.api.IPermission;
+import keepcalm.mods.permissions.api.PermissibleSetting;
+import keepcalm.mods.permissions.api.PermissionFactory;
+import keepcalm.mods.permissions.api.Permissions;
+
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -23,6 +28,9 @@ public class PermissionsContainer extends DummyModContainer {
 		meta.name = "Permissions";
 		meta.description = "A simple permissions API for Minecraft";
 		meta.version = "1.4.2-0";
+		
+		IPermission permCmd = PermissionFactory.getPermissionForArguments(PermissibleSetting.operator, "PermissionCommand", "Allow Permissions to be run", "forgePermissions.commands.permissioncontrol");
+		Permissions.registerPermission(permCmd);
 		
 	}
 	
