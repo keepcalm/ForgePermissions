@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 
@@ -17,70 +18,73 @@ import keepcalm.mods.permissions.configurationHelpers.YamlConfiguration;
 import net.minecraft.src.EntityPlayer;
 
 public class YAMLPermissionsProvider implements IPermissionsProvider {
-	
-	private HashMap<String, List<IPermission>> perms;
+
+	private HashMap<String, List<IPermission>> userPerms = new HashMap<String, List<IPermission>>();
 	/**
 	 * A map of username -> list of groups it inherits from
 	 */
-	private HashMap<String, List<String>> userDependencyMap;
-	private HashMap<String, List<IPermission>> groups;
+	private HashMap<String, List<String>> userDependencyMap = new HashMap<String, List<String>>();
+	private HashMap<String, List<IPermission>> userExclusions = new HashMap<String, List<IPermission>>();
+	
+	private HashMap<String, List<IPermission>> groupPerms = new HashMap<String, List<IPermission>>();
 	/**
 	 * a map of group name -> groups it inherits from
 	 */
-	private HashMap<String, List<String>> groupDependencyMap;
- 	private File userFile;
+	private HashMap<String, List<String>> groupDependencyMap = new HashMap<String, List<String>>();
+	private HashMap<String, List<String>> groupExclusions = new HashMap<String, List<String>>();
+	private File userFile;
 	private File configFile;
 	private File groupsFile;
 	private YamlConfiguration configuration;
 	private YamlConfiguration usersCfg;
 	private YamlConfiguration groupCfg;
-	
+
 	@Override
 	public List<IPermission> getPermissionsForPlayer(String name) {
-		return perms.get(name.toLowerCase());
+		return userPerms.get(name.toLowerCase());
 	}
 
 	@Override
 	public List<IPermission> getPermissionsForPlayer(EntityPlayer ep) {
-		return perms.get(ep.username.toLowerCase());
+		return userPerms.get(ep.username.toLowerCase());
 	}
 
 	@Override
 	public boolean doesPlayerHavePermission(String path, EntityPlayer player) {
-		return perms.get(player.username.toLowerCase()).contains(path);
+		return userPerms.get(player.username.toLowerCase()).contains(path);
 	}
 
 	@Override
 	public void givePlayerPerm(IPermission path, EntityPlayer guy) {
-		if (!perms.get(guy.username.toLowerCase()).contains(path)) {
-			perms.get(guy.username.toLowerCase()).add(path);
+		if (!userPerms.get(guy.username.toLowerCase()).contains(path)) {
+			userPerms.get(guy.username.toLowerCase()).add(path);
 		}
 	}
 
 	@Override
 	public void removePlayerPerm(String name, EntityPlayer guy) {
 		String key = guy.username.toLowerCase();
-		if (perms.get(key).contains(name)) {
-			perms.get(key).remove(name);
+		if (userPerms.get(key).contains(name)) {
+			userPerms.get(key).remove(name);
 		}
 	}
-	
+
 	private void recalculateUserInfo() {
 		loadUserInformationFromYaml(usersCfg);
 	}
-	
+
 	private void loadUserInformationFromYaml(YamlConfiguration users) {
 		for (String i : users.getKeys(false)) {
-			
+
 			if (users.isConfigurationSection(i)) {
-				
+
 				ConfigurationSection userConfig = users.getConfigurationSection(i);
 				// contains computed permissions for this user
 				List<IPermission> userPerms = new ArrayList<IPermission>();
 				List<IPermission> ignoredPerms = new ArrayList<IPermission>();
 				if (userConfig.isList("permissions")) {
 					// add permissions
-					
+
 					for (String perm : userConfig.getStringList("permissions")) {
 						boolean cancel = false;
 						if (perm.startsWith("!")) {
@@ -100,14 +104,33 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 							userPerms.add(iperm);
 						}
 					}
+					userExclusions.put(i, ignoredPerms);
+					
 				} // end of permissions processing
+				List<String> dependencies = new ArrayList<String>();
+				if (userConfig.isList("groups")) {
+					for (String j : userConfig.getStringList("groups")) {
+						dependencies.add(j);
+					}
+				}
+				userDependencyMap.put(i, dependencies);
 			}
 			else {
 				FMLCommonHandler.instance().getFMLLogger().warning("The user entry for " + i + " is INVALID! Ignoring...");
 			}
 		}
+		recalculateUserDependencies();
 	}
-	
+
+	private void recalculateUserDependencies() {
+		
+		for (String key : userDependencyMap.keySet()) {
+			for (String group : userDependencyMap.get(key)) {
+				userPerms.get(key).addAll(groupPerms.get(group));
+			}
+		}
+	}
+
 	@Override
 	public void initialisePermissions() throws Exception {
 		// groups
@@ -117,11 +140,17 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 		groupCfg = new YamlConfiguration();
 		groupCfg.load(groupsFile);
 		YamlConfiguration defaults = new YamlConfiguration();
-		defaults.load(defaultGroups);
-		groupCfg.setDefaults(defaults);
+		try {
+			defaults.load(defaultGroups);
+			groupCfg.setDefaults(defaults);
+		}
+		catch (Exception e) {
+			FMLCommonHandler.instance().getFMLLogger().log(Level.SEVERE, "Failed to read defaults file - perhaps your are in a development environment?", e);
+		}
+		
 		loadGroupInformation(groupCfg);
-		
-		
+
+
 		// users - __MUST__ be last - otherwise the group-loading functionality breaks
 		this.userFile = new File(Permissions.permissionLocation, "/users.yml");
 		userFile.createNewFile();
@@ -129,18 +158,23 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 		usersCfg = new YamlConfiguration();
 		usersCfg.load(userFile);
 		defaults = new YamlConfiguration(); // reset
-		defaults.load(defaultUsers);
-		usersCfg.setDefaults(defaults);
+		try {
+			defaults.load(defaultUsers);
+			usersCfg.setDefaults(defaults);
+		}
+		catch (Exception e) {
+			FMLCommonHandler.instance().getFMLLogger().log(Level.SEVERE, "Failed to read defaults file - perhaps your are in a development environment?", e);
+		}
 		loadUserInformationFromYaml(usersCfg);
-		
-		
+
+
 	}
 
 	private void loadGroupInformation(YamlConfiguration groupCfg) {
 		for (String key : groupCfg.getKeys(false)) {
 			if (groupCfg.isConfigurationSection(key)) {
 				ConfigurationSection cfg = groupCfg.getConfigurationSection(key);
-				
+
 				// so we are going to run excludedPerms on just the groups, not calculatedPerms itself.
 				List<IPermission> calculatedPerms = new ArrayList<IPermission>();
 				List<IPermission> excludedPerms = new ArrayList<IPermission>();
@@ -159,46 +193,56 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 						}
 						else {
 							if (cancel) {
-							
+
 								excludedPerms.add(p);
 							}
 							else {
-								
+
 								calculatedPerms.add(p);
 							}
 						}
 					}
 				}
 				List<String> dependencies = new ArrayList<String>();
-				List<String> exclusions = new ArrayList<String>();
 				if (groupCfg.isList("inherit")) {
 					for (String group : groupCfg.getStringList("inherit")) {
-						boolean cancel = false;
-						if (group.startsWith("!")) {
-							cancel = true;
-							group = group.replace('!', ' ').trim();
-						}
-						if (cancel) {
-							exclusions.add(group);
-						}
-						else {
-							dependencies.add(group);
-						}
+						dependencies.add(group);
 					}
 				}
-				dependencies.removeAll(exclusions);
+				this.groupExclusions.put(key, dependencies);
 				
+				
+				
+
 			}
+			else {
+				FMLCommonHandler.instance().getFMLLogger().warning("Invalid group configuration: " + key + " - ignoring...");
+			}
+			updateGroupDependencyInfo();
 		}
 	}
 	
+	private void updateGroupDependencyInfo() {
+		
+		for (String i : this.groupDependencyMap.keySet()) {
+			List<IPermission> perms = new ArrayList<IPermission>();
+			for (String j : this.groupDependencyMap.get(i)) {
+				perms.addAll(groupPerms.get(j));
+				
+			}
+			perms.removeAll(groupExclusions.get(i));
+			groupPerms.get(i).addAll(perms);
+		}
+		
+	}
+
 	private void initialiseGroupInfo() {
 		loadGroupInformation(groupCfg);
 	}
 
 	@Override
 	public void savePermissions() {
-		
+
 	}
 
 	@Override
@@ -208,23 +252,23 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 
 	@Override
 	public void givePlayerPerm(IPermission perm, String name) {
-		if (!perms.get(name.toLowerCase()).contains(perm)) {
-			perms.get(name.toLowerCase()).add(perm);
+		if (!userPerms.get(name.toLowerCase()).contains(perm)) {
+			userPerms.get(name.toLowerCase()).add(perm);
 		}
 	}
 
-	
+
 	@Override
 	public void removePlayerPerm(IPermission perm, String name) {
-		if (!perms.get(name.toLowerCase()).contains(perm)) {
-			perms.get(name.toLowerCase()).add(perm);
+		if (!userPerms.get(name.toLowerCase()).contains(perm)) {
+			userPerms.get(name.toLowerCase()).add(perm);
 		}
 	}
-	
+
 	@Override
 	public void removePlayerPerm(String path, String username) {
-		if (!perms.get(username.toLowerCase()).contains(path)) {
-			perms.get(username.toLowerCase()).remove(path);
+		if (!userPerms.get(username.toLowerCase()).contains(path)) {
+			userPerms.get(username.toLowerCase()).remove(path);
 		}
 	}
 

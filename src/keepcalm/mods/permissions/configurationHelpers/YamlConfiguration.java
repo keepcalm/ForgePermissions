@@ -37,7 +37,7 @@ public class YamlConfiguration extends FileConfiguration {
         if (dump.equals(BLANK_CONFIG)) {
             dump = "";
         }
-
+        
         return header + dump;
     }
 

@@ -17,8 +17,6 @@ public interface IPermissionsProvider {
 	
 	
 	
-	public boolean doesPlayerHavePermission(String name, EntityPlayer player);
-	
 	public void givePlayerPerm(IPermission perm, EntityPlayer guy);
 	
 	/**
@@ -27,7 +25,7 @@ public interface IPermissionsProvider {
 	 * @param name - name of player
 	 */
 	public void givePlayerPerm(IPermission perm, String name);
-	
+
 	public void removePlayerPerm(String name, EntityPlayer guy);
 	
 	/**
@@ -37,11 +35,20 @@ public interface IPermissionsProvider {
 	 */
 	public void removePlayerPerm(IPermission perm, String name);
 	
+	/**
+	 * Called on server starting - so you CAN access the server.
+	 * @throws Exception
+	 */
 	public void initialisePermissions() throws Exception;
 	
+	/**
+	 * Called on server shutdown, and whenever command input is given.
+	 */
 	public void savePermissions();
 	
 	public PermissionPriority getPriority();
 	
 	public void removePlayerPerm(String name, String username);
+	
+	public boolean doesPlayerHavePermission(String path, EntityPlayer player);
 }

@@ -7,6 +7,7 @@ import keepcalm.mods.permissions.api.IPermission;
 import keepcalm.mods.permissions.api.PermissibleSetting;
 import keepcalm.mods.permissions.api.PermissionFactory;
 import keepcalm.mods.permissions.api.Permissions;
+import keepcalm.mods.permissions.internals.YAMLPermissionsProvider;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -15,6 +16,7 @@ import cpw.mods.fml.common.DummyModContainer;
 import cpw.mods.fml.common.LoadController;
 import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 public class PermissionsContainer extends DummyModContainer {
 	public static File cfgDir;
@@ -31,6 +33,9 @@ public class PermissionsContainer extends DummyModContainer {
 		
 		IPermission permCmd = PermissionFactory.getPermissionForArguments(PermissibleSetting.operator, "PermissionCommand", "Allow Permissions to be run", "forgePermissions.commands.permissioncontrol");
 		Permissions.registerPermission(permCmd);
+		Permissions.defaultPermsProvider = new YAMLPermissionsProvider();
+		
+		
 		
 	}
 	
@@ -42,6 +47,11 @@ public class PermissionsContainer extends DummyModContainer {
 	@Subscribe
 	public void preInit(FMLPreInitializationEvent ev) {
 		this.cfgDir = new File(ev.getModConfigurationDirectory(), "/permissions");
+	}
+	
+	@Subscribe
+	public void serverStart(FMLServerStartingEvent ev) {
+		Permissions.init();
 	}
 
 }

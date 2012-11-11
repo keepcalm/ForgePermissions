@@ -4,7 +4,7 @@ import java.util.Map;
 
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
-public class PermisisonsLoadingPlugin implements IFMLLoadingPlugin {
+public class PermissionsLoadingPlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String[] getLibraryRequestClass() {

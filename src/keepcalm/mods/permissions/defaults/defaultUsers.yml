@@ -12,7 +12,5 @@
 #    - !permission_from_group
 #   groups:
 #     - group_from_groups.yml
-# disable a group that is inherited from groups.yml 
-#     - !parent_group_of_that_group
    
 # more features will be added. Eventually.

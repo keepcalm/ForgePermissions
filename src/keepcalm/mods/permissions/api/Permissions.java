@@ -20,11 +20,11 @@ public class Permissions {
 	
 	private static ArrayList<IPermissionsProvider> possibleProviders = new ArrayList<IPermissionsProvider>();
 
-	private static IPermissionsProvider defaultPermsProvider = new StupidPermissionProvider();
+	public static IPermissionsProvider defaultPermsProvider = new StupidPermissionProvider();
 
 	private static List<String> permissions = new ArrayList<String>();
 
-	public static List<IPermission> allPermissions;
+	public static List<IPermission> allPermissions = new ArrayList<IPermission>();
 	
 	private static boolean initialized;
 	
@@ -37,6 +37,7 @@ public class Permissions {
 	public static void init() {
 		// if it's not already set.
 		permissionLocation = PermissionsContainer.cfgDir;
+		permissionLocation.mkdirs();
 		if (defaultPermsProvider instanceof StupidPermissionProvider) {
 			try {
 				for (IPermissionsProvider j : possibleProviders) {
@@ -80,7 +81,7 @@ public class Permissions {
 
 	public static void addPermissionProvider(IPermissionsProvider permProv) {
 		possibleProviders.add(permProv);
-	}
+	}	
 	
 	public void setDefaultPermissionProvider(IPermissionsProvider newDefault) {
 		if (initialized) 
