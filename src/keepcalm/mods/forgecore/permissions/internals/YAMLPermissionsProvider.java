@@ -1,6 +1,7 @@
 package keepcalm.mods.forgecore.permissions.internals;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import keepcalm.mods.forgecore.api.permissions.PermissionPriority;
 import keepcalm.mods.forgecore.api.permissions.Permissions;
 import keepcalm.mods.forgecore.permissions.configurationHelpers.ConfigurationSection;
 import keepcalm.mods.forgecore.permissions.configurationHelpers.YamlConfiguration;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityPlayer;
 
 public class YAMLPermissionsProvider implements IPermissionsProvider {
@@ -55,7 +57,9 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 			return userPerms.get(player.username.toLowerCase()).contains(path);
 		}
 		catch (Exception e) {
-			return false;
+			if (!MinecraftServer.getServer().isSinglePlayer())
+				return false;
+			return true;
 		}
 	}
 
@@ -67,7 +71,7 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 	}
 
 	@Override
-	public void removePlayerPerm(String name, EntityPlayer guy) {
+	public void removePlayerPerm(IPermission name, EntityPlayer guy) {
 		String key = guy.username.toLowerCase();
 		if (userPerms.get(key).contains(name)) {
 			userPerms.get(key).remove(name);
@@ -248,7 +252,13 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 
 	@Override
 	public void savePermissions() {
-
+		try {
+			usersCfg.save(userFile);
+			groupCfg.save(groupsFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Override

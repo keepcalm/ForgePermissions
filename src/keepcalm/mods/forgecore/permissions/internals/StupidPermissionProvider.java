@@ -34,7 +34,7 @@ public class StupidPermissionProvider implements IPermissionsProvider {
 	public void givePlayerPerm(IPermission perm, EntityPlayer guy) {}
 
 	@Override
-	public void removePlayerPerm(String name, EntityPlayer guy) {}
+	public void removePlayerPerm(IPermission name, EntityPlayer guy) {}
 
 	@Override
 	public PermissionPriority getPriority() {

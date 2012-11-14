@@ -26,7 +26,7 @@ public interface IPermissionsProvider {
 	 */
 	public void givePlayerPerm(IPermission perm, String name);
 
-	public void removePlayerPerm(String name, EntityPlayer guy);
+	public void removePlayerPerm(IPermission perm, EntityPlayer guy);
 	
 	/**
 	 * Used if a player is offline. Should ALWAYS work.

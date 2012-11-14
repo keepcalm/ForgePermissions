@@ -98,8 +98,15 @@ public class Permissions {
 		
 	}
 	
+	public static void removePlayerPermission(IPermission perm, EntityPlayer player) {
+		defaultPermsProvider.removePlayerPerm(perm, player);
+	}
+	
 	public static IPermission getPermissionFromPath(String configPath) {
 		return PermissionRegistry.getPermissionFromPath(configPath);
+	}
+	public static void stop() {
+		defaultPermsProvider.savePermissions();
 	}
 
 }

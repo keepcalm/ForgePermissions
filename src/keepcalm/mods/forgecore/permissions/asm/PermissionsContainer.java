@@ -20,9 +20,11 @@ import cpw.mods.fml.common.DummyModContainer;
 import cpw.mods.fml.common.LoadController;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModMetadata;
+import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 
 public class PermissionsContainer extends DummyModContainer {
 	public static File cfgDir;
@@ -37,6 +39,7 @@ public class PermissionsContainer extends DummyModContainer {
 		meta.description = "A simple permissions API for Minecraft";
 		meta.version = VERSION;
 		
+		
 		IPermission permCmd = PermissionFactory.getPermissionForArguments(PermissibleSetting.operator, "PermissionCommand", "Allow Permissions to be run", "forgePermissions.commands.permissioncontrol");
 		Permissions.registerPermission(permCmd);
 		Permissions.defaultPermsProvider = new YAMLPermissionsProvider();
@@ -44,6 +47,12 @@ public class PermissionsContainer extends DummyModContainer {
 		ForgeCoreModContainer.registerModDependency(this);
 		
 		
+	}
+	@Subscribe
+	public void construct(FMLConstructionEvent ev) {
+		//getMetadata().parentMod = Loader.instance().getIndexedModList().get("ForgeCore_Dummy");
+		getMetadata().parent = "ForgeCore_Dummy";
+		//System.out.println(getMetadata().parentMod);
 	}
 	
 	public boolean registerBus(EventBus b, LoadController c) {
@@ -58,14 +67,18 @@ public class PermissionsContainer extends DummyModContainer {
 	
 	@Subscribe
 	public void postInit(FMLPostInitializationEvent ev) {
-		super.getMetadata().parentMod = Loader.instance().getIndexedModList().get("ForgeCore_Dummy");
+		ForgeCoreModContainer.registerCommand(new CommandPermission());
 	}
 	
 	@Subscribe
-	public void serverStart(FMLServerStartingEvent ev) {
-		ServerCommandManager scm = (ServerCommandManager) ev.getServer().getCommandManager();
-		scm.registerCommand(new CommandPermission());
+	public void serverStarting(FMLServerStartingEvent ev) {
 		Permissions.init();
 	}
+	
+	@Subscribe
+	public void serverStopping(FMLServerStoppingEvent ev) {
+		Permissions.stop();
+	}
+
 
 }
