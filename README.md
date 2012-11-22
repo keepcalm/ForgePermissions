@@ -1,7 +1,7 @@
-ForgePermissions - Permissions for forge
-========================================
+ForgeCore - Permissions for forge, base for mods
+================================================
 
 This will add an extensible permissions interface for forge.
 
-It's an extreme WIP, nothing uses it yet,
-but I might get it into forge. Someday.
+It downloads SnakeYAML using a coremod
+

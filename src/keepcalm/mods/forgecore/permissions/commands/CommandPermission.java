@@ -73,7 +73,9 @@ public class CommandPermission extends CommandBase {
 		}
 		
 		
-		
+		else {
+			var1.sendChatToPlayer("UNIMPLEMENTED");
+		}
 		
 	}
 

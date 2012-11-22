@@ -1,0 +1,13 @@
+[
+{
+  "modid": "ForgeCore_Dummy",
+  "name": "ForgeCore",
+  "description": "A common base for all the mods which take common Bukkit functionality onto MinecraftForge.\nIt implements a permissions API, along with a few useful commands.",
+  "version": "1.4.4-0",
+  "updateUrl": "",
+  "authors": [
+    "keepcalm",
+  ],
+
+}
+]
