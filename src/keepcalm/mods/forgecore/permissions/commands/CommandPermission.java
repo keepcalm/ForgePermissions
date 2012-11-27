@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import keepcalm.mods.forgecore.ChatColor;
+import keepcalm.mods.forgecore.api.permissions.IPermission;
 import keepcalm.mods.forgecore.api.permissions.Permissions;
 
 
@@ -12,6 +13,7 @@ import net.minecraft.src.CommandBase;
 import net.minecraft.src.CommandException;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ICommandSender;
+import net.minecraft.src.StringUtils;
 import net.minecraft.src.WrongUsageException;
 
 public class CommandPermission extends CommandBase {
@@ -40,10 +42,10 @@ public class CommandPermission extends CommandBase {
 	public void processCommand(ICommandSender var1, String[] var2) {
 		boolean isConsole = !(var1 instanceof EntityPlayer);
 		String action;
-		String who;
+		String who = "";
 		try {
 			action = var2[0].toLowerCase();
-			who = var2[1];
+			
 			
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
@@ -51,6 +53,18 @@ public class CommandPermission extends CommandBase {
 		}
 		if (!validActions.contains(action.toLowerCase())) {
 			throw new WrongUsageException("/permissions <add|remove|list> player [permission]");
+		}
+		
+		try {
+			who = var2[1].toLowerCase();
+		}
+		catch (Exception e) {
+			if (action == "list") {
+				who = "__GLOBAL__PERMISSION__LISTING";
+			}
+			else {
+				throw new WrongUsageException("/permissions <add|remove|list> player [permission]");
+			}
 		}
 		
 		String what = "";
@@ -73,8 +87,26 @@ public class CommandPermission extends CommandBase {
 		}
 		
 		
+		else if (action.equals( "list")) {
+			if (who == "__GLOBAL__PERMISSION__LISTING") {
+				var1.sendChatToPlayer("Available permissions: ");
+				for (IPermission j : Permissions.allPermissions) {
+					var1.sendChatToPlayer(ChatColor.GREEN + j.getName() + ChatColor.RESET + " " + j.getConfigurationPath());
+				}
+			}
+			var1.sendChatToPlayer(ChatColor.GREEN + "Permissions for " + ChatColor.YELLOW + var2[1] + ":" );
+			try {
+				for (IPermission j : Permissions.getPermissionsForPlayer(who)) {
+					var1.sendChatToPlayer(ChatColor.GREEN + j.getName() + ChatColor.RESET + " " + j.getConfigurationPath());
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				var1.sendChatToPlayer("No permissions!");
+			}
+		}
 		else {
-			var1.sendChatToPlayer("UNIMPLEMENTED");
+			throw new WrongUsageException("Something __really__ weird happend. Interesting.");
 		}
 		
 	}

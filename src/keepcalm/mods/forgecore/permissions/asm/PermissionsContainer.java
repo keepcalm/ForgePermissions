@@ -38,13 +38,12 @@ public class PermissionsContainer extends DummyModContainer {
 		meta.name = "ForgePermissions";
 		meta.description = "A simple permissions API for Minecraft";
 		meta.version = VERSION;
-		
+		meta.parent = "ForgeCore";
 		
 		IPermission permCmd = PermissionFactory.getPermissionForArguments(PermissibleSetting.operator, "PermissionCommand", "Allow Permissions to be run", "forgePermissions.commands.permissioncontrol");
 		Permissions.registerPermission(permCmd);
 		Permissions.defaultPermsProvider = new YAMLPermissionsProvider();
 		
-		ForgeCoreModContainer.registerModDependency(this);
 		
 		
 	}

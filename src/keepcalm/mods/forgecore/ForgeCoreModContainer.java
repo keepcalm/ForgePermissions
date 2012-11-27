@@ -8,17 +8,14 @@ import java.util.List;
 import keepcalm.mods.forgecore.api.permissions.PermissibleSetting;
 import keepcalm.mods.forgecore.api.permissions.PermissionFactory;
 import keepcalm.mods.forgecore.api.permissions.Permissions;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.ICommand;
+import net.minecraft.src.MinecraftException;
 import net.minecraft.src.ServerCommandManager;
 import cpw.mods.fml.common.FMLModContainer;
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.Metadata;
 import cpw.mods.fml.common.Mod.PostInit;
 import cpw.mods.fml.common.Mod.ServerStarting;
 import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
@@ -36,16 +33,6 @@ public class ForgeCoreModContainer {
 	
 	private static List<ICommand> commands = new ArrayList<ICommand>();
 	
-	private static FMLModContainer myMC;
-	/**
-	 * Add a mod to this mod's child mods list.
-	 * To get the mod container for a \@Mod then you want to
-	 * use Loader.instance().getIndexedModList().get(modID);
-	 * @param mc
-	 */
-	public static void registerModDependency(ModContainer mc) {
-		mods.add(mc);
-	}
 	
 	public static void registerCommand(ICommand ic) {
 		commands.add(ic);
@@ -58,8 +45,14 @@ public class ForgeCoreModContainer {
 	}
 	
 	@PostInit
-	public void postInit(FMLPostInitializationEvent ev) {
-		
+	public void postInit(FMLPostInitializationEvent ev) throws MinecraftException {
+		// check that we were installed in the right place
+		try {
+			getClass().getClassLoader().loadClass("org.yaml.snakeyaml.Yaml");
+		}
+		catch (ClassNotFoundException e) {
+			throw new MinecraftException("ForgeCore is a coremod!");
+		}
 		/*for (Field i : myMeta.getClass().getFields()) {
 			
 				try {

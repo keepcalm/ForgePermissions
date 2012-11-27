@@ -105,6 +105,29 @@ public class Permissions {
 	public static IPermission getPermissionFromPath(String configPath) {
 		return PermissionRegistry.getPermissionFromPath(configPath);
 	}
+	
+	/**
+	 * 
+	 * @param player - a String containing the player's username or the EntityPlayer object
+	 * @return
+	 */
+	public static List<IPermission> getPermissionsForPlayer(Object player) {
+		String name;
+		if (player instanceof EntityPlayer) {
+			name = ((EntityPlayer) player).username.toLowerCase();
+		}
+		else if (player instanceof String) {
+			name = (String) player;
+			name = name.toLowerCase();
+		}
+		else {
+			throw new RuntimeException("Player must be either an EntityPlayer or a String!");
+		}
+		
+		return defaultPermsProvider.getPermissionsForPlayer(name);
+		
+	}
+	
 	public static void stop() {
 		defaultPermsProvider.savePermissions();
 	}

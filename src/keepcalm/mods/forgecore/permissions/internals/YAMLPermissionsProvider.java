@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -43,12 +44,22 @@ public class YAMLPermissionsProvider implements IPermissionsProvider {
 
 	@Override
 	public List<IPermission> getPermissionsForPlayer(String name) {
-		return userPerms.get(name.toLowerCase());
+		try {
+			return userPerms.get(name.toLowerCase());
+		}
+		catch (Exception e) {
+			return Arrays.asList(new IPermission[0]);
+		}
 	}
 
 	@Override
 	public List<IPermission> getPermissionsForPlayer(EntityPlayer ep) {
-		return userPerms.get(ep.username.toLowerCase());
+		try {
+			return userPerms.get(ep.username.toLowerCase());
+		}
+		catch (Exception e) {
+			return Arrays.asList(new IPermission[0]);
+		}
 	}
 
 	@Override
